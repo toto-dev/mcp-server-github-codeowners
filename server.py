@@ -130,6 +130,8 @@ def get_file_owner(
         logger.exception("Failed to get file owner")
         raise
 
+def main():
+    mcp.run(transport=TRANSPORT)
 
 if __name__ == "__main__":
-    mcp.run(transport=TRANSPORT)
+    main()

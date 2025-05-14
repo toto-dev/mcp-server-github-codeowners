@@ -237,7 +237,7 @@ cli = [
 [[package]]
 name = "mcp-github-owners"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "codeowners" },
     { name = "mcp", extra = ["cli"] },
