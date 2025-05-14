@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "codeowners>=0.8.0",
-    "mcp[cli]>=1.8.1",
+    "fastmcp>=2.3.3",
     "python-decouple>=3.8",
     "requests>=2.32.3",
 ]

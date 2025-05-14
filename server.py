@@ -5,13 +5,14 @@ import logging
 from decouple import config, Choices
 import requests
 from codeowners import CodeOwners
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 # Read environment variables
 GITHUB_TOKEN = config('GITHUB_TOKEN', default=None)
 DEBUG = config('DEBUG', default=False, cast=bool)
 CACHE_TTL_SECS = config('CACHE_TTL_SECS', default=300, cast=int)
 TRANSPORT = config('TRANSPORT', default='stdio', cast=Choices(["stdio", "sse", "streamable-http"]))
+HOST = config('HOST', default='127.0.0.1')
 PORT = config('PORT', default=8000, cast=int)
 
 # Setup logging
@@ -73,6 +74,8 @@ class CodeownersCache:
 # Global CODEOWNERS cache
 codeowners_cache = CodeownersCache()
 mcp = FastMCP("github-codeowners")
+mcp.settings.debug = DEBUG
+mcp.settings.host = HOST
 mcp.settings.port = PORT
 
 def get_file_exists(
