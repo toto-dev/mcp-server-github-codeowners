@@ -8,7 +8,7 @@ from codeowners import CodeOwners
 from mcp.server.fastmcp import FastMCP
 
 # Read environment variables
-GITHUB_TOKEN = config('GITHUB_TOKEN')
+GITHUB_TOKEN = config('GITHUB_TOKEN', default=None)
 DEBUG = config('DEBUG', default=False, cast=bool)
 CACHE_TTL_SECS = config('CACHE_TTL_SECS', default=300, cast=int)
 TRANSPORT = config('TRANSPORT', default='stdio', cast=Choices(["stdio", "sse", "streamable-http"]))
