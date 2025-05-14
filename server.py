@@ -1,7 +1,8 @@
 import time
 from threading import Lock
 import logging
-
+from typing import Annotated
+from pydantic import Field
 from decouple import config, Choices
 import requests
 from codeowners import CodeOwners
@@ -73,22 +74,28 @@ class CodeownersCache:
 
 # Global CODEOWNERS cache
 codeowners_cache = CodeownersCache()
-mcp = FastMCP("github-codeowners")
+mcp = FastMCP(
+    name="github-codeowners",
+    instructions="""
+        This MCP server expose ownership information for files contained in Github repositories.
+        """
+)
+FastMCP("github-codeowners")
 mcp.settings.debug = DEBUG
 mcp.settings.host = HOST
 mcp.settings.port = PORT
 
 def get_file_exists(
-    owner: str,
-    repo: str,
-    file_path: str,
-    branch: str = "main"
+    owner: Annotated[str, Field(description="Repository owner")],
+    repo: Annotated[str, Field(description="Repository name")],
+    path: Annotated[str, Field(description="File path")],
+    branch: Annotated[str, Field(description="Branch name")] = "main"
     ) -> bool:
     """
     Returns if the given file exists
     """
     # No owners, check if the file exists in GitHub
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={branch}"
     headers = {"Accept": "application/vnd.github.v3+json"}
     if GITHUB_TOKEN:
         headers["Authorization"] = f"token {GITHUB_TOKEN}"
@@ -107,26 +114,27 @@ def get_file_exists(
 
 @mcp.tool()
 def get_file_owner(
-    owner: str,
-    repo: str,
-    file_path: str,
-    branch: str = "main"
+    owner: Annotated[str, Field(description="Repository owner")],
+    repo: Annotated[str, Field(description="Repository name")],
+    path: Annotated[str, Field(description="File path")],
+    branch: Annotated[str, Field(description="Branch name")] = "main"
 ) -> list[str]:
     """
-    Returns the CODEOWNERS owners for the specified file in a GitHub repository.
+    Returns the owners of the specified file in the GitHub repository.
+    The owners are derived from the CODEOWNERS file in the repository.
     """
     try:
         codeowners = codeowners_cache.get_codeowners(owner, repo, branch)
-        owners = codeowners.of(file_path)
-        logger.debug(f"Owners for {file_path}: {owners}")
+        owners = codeowners.of(path)
+        logger.debug(f"Owners for {path}: {owners}")
 
         if owners:
             # owners is a list of tuple Tuple[Literal["USERNAME", "TEAM", "EMAIL"], str]
             # return only the actual owner of the file
             return [o for _, o in owners]
 
-        if not get_file_exists(owner, repo, file_path, branch):
-            raise FileNotFoundError(f"File '{file_path}' not found in repo '{owner}/{repo}' on branch '{branch}'.")
+        if not get_file_exists(owner, repo, path, branch):
+            raise FileNotFoundError(f"File '{path}' not found in repo '{owner}/{repo}' on branch '{branch}'.")
 
         return []
     except Exception:
