@@ -112,8 +112,7 @@ def get_file_exists(
         raise Exception(error_msg)
 
 
-@mcp.tool()
-def get_file_owner(
+def get_file_owners(
     owner: Annotated[str, Field(description="Repository owner")],
     repo: Annotated[str, Field(description="Repository name")],
     path: Annotated[str, Field(description="File path")],
@@ -140,6 +139,27 @@ def get_file_owner(
     except Exception:
         logger.exception("Failed to get file owner")
         raise
+
+@mcp.tool()
+def get_files_owners(
+    owner: Annotated[str, Field(description="Repository owner")],
+    repo: Annotated[str, Field(description="Repository name")],
+    paths: Annotated[list[str], Field(description="List of file paths")],
+    branch: Annotated[str, Field(description="Branch name")] = "main"
+) -> dict[dict]:
+    """
+    Returns the owners of the given files in the GitHub repository.
+    The owners are derived from the CODEOWNERS file in the repository.
+    """
+
+    res = dict()
+    for path in paths:
+        try:
+            owners = get_file_owners(owner, repo, path, branch)
+            res[path] = dict(owners=owners)
+        except FileNotFoundError as e:
+            res[path] = dict(error=str(e))
+    return res
 
 def main():
     mcp.run(transport=TRANSPORT)
