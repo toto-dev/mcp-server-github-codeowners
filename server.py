@@ -80,10 +80,6 @@ mcp = FastMCP(
         This MCP server expose ownership information for files contained in Github repositories.
         """
 )
-FastMCP("github-codeowners")
-mcp.settings.debug = DEBUG
-mcp.settings.host = HOST
-mcp.settings.port = PORT
 
 def get_file_exists(
     owner: Annotated[str, Field(description="Repository owner")],
@@ -142,11 +138,11 @@ def get_file_owners(
 
 @mcp.tool()
 def get_files_owners(
-    owner: Annotated[str, Field(description="Repository owner")],
-    repo: Annotated[str, Field(description="Repository name")],
-    paths: Annotated[list[str], Field(description="List of file paths")],
-    branch: Annotated[str, Field(description="Branch name")] = "main"
-) -> dict[dict]:
+    owner: Annotated[str, "Repository owner"],
+    repo: Annotated[str, "Repository name"],
+    paths: Annotated[list[str], "List of file paths"],
+    branch: Annotated[str, "Branch name"] = "main",
+) -> dict:
     """
     Returns the owners of the given files in the GitHub repository.
     The owners are derived from the CODEOWNERS file in the repository.
@@ -162,7 +158,10 @@ def get_files_owners(
     return res
 
 def main():
-    mcp.run(transport=TRANSPORT)
+    if(TRANSPORT == 'stdio'):
+        mcp.run(transport=TRANSPORT)
+    else:
+        mcp.run(transport=TRANSPORT, host=HOST, port=PORT)
 
 if __name__ == "__main__":
     main()
