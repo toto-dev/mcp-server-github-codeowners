@@ -1,5 +1,5 @@
 # Stage 1: deps only, based on uv’s Debian-slim image
-FROM ghcr.io/astral-sh/uv:bookworm-slim AS builder
+FROM ghcr.io/astral-sh/uv:alpine AS builder
 
 # Install the project into `/app`
 WORKDIR /app
